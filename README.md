@@ -1,55 +1,64 @@
-# React + TypeScript + Vite
+# Instagram Clone Coding Practice
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+This is an Instagram clone frontend using React, TypeScript, Zustand, and shadcn/ui.
 
-Currently, two official plugins are available:
+## Installation
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+### 1. Install Dependencies
 
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default tseslint.config({
-  extends: [
-    // Remove ...tseslint.configs.recommended and replace with this
-    ...tseslint.configs.recommendedTypeChecked,
-    // Alternatively, use this for stricter rules
-    ...tseslint.configs.strictTypeChecked,
-    // Optionally, add this for stylistic rules
-    ...tseslint.configs.stylisticTypeChecked,
-  ],
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
+```bash
+npm install
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+### 2. shadcn/ui Setup
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+This project uses shadcn/ui components. Initialize the shadcn/ui setup with the following command:
 
-export default tseslint.config({
-  plugins: {
-    // Add the react-x and react-dom plugins
-    'react-x': reactX,
-    'react-dom': reactDom,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended typescript rules
-    ...reactX.configs['recommended-typescript'].rules,
-    ...reactDom.configs.recommended.rules,
-  },
-})
+```bash
+npx shadcn-ui@latest init
 ```
-# insta-clone-frontend
+
+During initialization, respond as follows:
+
+- Style: `Default`
+- Base color: `Slate`
+- Global CSS: `src/index.css`
+- CSS variables: `Yes`
+- React Server Components: `No`
+- Tailwind CSS: `Yes` (already installed)
+- Import alias: `@/*`
+
+### 3. Install Required Components
+
+Install the essential shadcn components:
+
+```bash
+npx shadcn-ui@latest add button
+npx shadcn-ui@latest add form
+npx shadcn-ui@latest add input
+npx shadcn-ui@latest add textarea
+npx shadcn-ui@latest add card
+npx shadcn-ui@latest add avatar
+npx shadcn-ui@latest add dialog
+npx shadcn-ui@latest add toast
+npx shadcn-ui@latest add alert
+npx shadcn-ui@latest add carousel
+npx shadcn-ui@latest add dropdown-menu
+npx shadcn-ui@latest add tabs
+npx shadcn-ui@latest add badge
+npx shadcn-ui@latest add progress
+```
+
+### 4. Run Development Server
+
+```bash
+npm run dev
+```
+
+## Setting Up Environment Variables
+
+Create a `.env.local` file and set the following environment variables:
+
+```
+VITE_API_URL=http://localhost:5001/api
+```
