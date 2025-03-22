@@ -1,3 +1,4 @@
+import PostList from "@/components/post/PostList";
 import { Button } from "@/components/ui/button";
 import { PlusSquare } from "lucide-react";
 import { Link } from "react-router-dom";
@@ -14,6 +15,7 @@ const HomePage = () => {
           </Link>
         </Button>
       </div>
+      <PostList />
     </div>
   );
 };

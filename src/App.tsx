@@ -9,6 +9,9 @@ import ProtectedRoute from "./components/auth/ProtectedRoute";
 import Layout from "./components/shared/Layout";
 import HomePage from "./pages/HomePage";
 import NotFoundPage from "./pages/NotFoundPage";
+import PostForm from "./components/post/PostForm";
+import PostDetail from "./components/post/PostDetail";
+import ProfilePage from "./pages/ProfilePage";
 
 function App() {
   const { checkAuth } = useAuthStore();
@@ -32,6 +35,50 @@ function App() {
             <ProtectedRoute>
               <Layout>
                 <HomePage />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/post/:id"
+          element={
+            <ProtectedRoute>
+              <Layout>
+                <PostDetail />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/post/new"
+          element={
+            <ProtectedRoute>
+              <Layout>
+                <PostForm />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/post/edit/:id"
+          element={
+            <ProtectedRoute>
+              <Layout>
+                <PostForm />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/profile/:username"
+          element={
+            <ProtectedRoute>
+              <Layout>
+                <ProfilePage />
               </Layout>
             </ProtectedRoute>
           }
