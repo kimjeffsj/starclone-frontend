@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { api } from "./authStore";
-import { Media, MediaUploadOptions } from "@/types/media.types";
+import { Media, MediaResponse, MediaUploadOptions } from "@/types/media.types";
 
 export interface MediaState {
   uploadedMedia: Media[];
@@ -40,19 +40,23 @@ export const useMediaStore = create<MediaState>((set, get) => ({
       if (options.resize)
         formData.append("resize", JSON.stringify(options.resize));
 
-      const response = await api.post("/media/upload", formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-        onUploadProgress: (progressEvent: any) => {
-          if (progressEvent.total) {
-            const percentCompleted = Math.round(
-              (progressEvent.loaded * 100) / progressEvent.total
-            );
-            set({ uploadProgress: percentCompleted });
-          }
-        },
-      });
+      const response = await api.post<MediaResponse>(
+        "/media/upload",
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+          onUploadProgress: (progressEvent: any) => {
+            if (progressEvent.total) {
+              const percentCompleted = Math.round(
+                (progressEvent.loaded * 100) / progressEvent.total
+              );
+              set({ uploadProgress: percentCompleted });
+            }
+          },
+        } as any
+      );
 
       const media = response.data.media;
       const uploadedMedia = [...get().uploadedMedia, media];
@@ -115,7 +119,7 @@ export const useMediaStore = create<MediaState>((set, get) => ({
   // Delete media
   deleteMedia: async (mediaId: string) => {
     try {
-      await api.delete("/media", { data: { mediaId } });
+      await api.delete(`/media/${mediaId}`);
 
       // Remove from the uploaded media list
       const uploadedMedia = get().uploadedMedia.filter(
