@@ -1,6 +1,5 @@
 import { ReactNode } from "react";
 import Header from "./Header";
-import { Toaster } from "sonner";
 
 interface LayoutProps {
   children: ReactNode;
@@ -16,7 +15,6 @@ const Layout = ({ children }: LayoutProps) => {
       <footer className="py-4 mt-auto text-center text-sm text-muted-foreground border-t bg-background">
         <p>&copy; 2025 InstaClone. All rights reserved.</p>
       </footer>
-      <Toaster />
     </div>
   );
 };

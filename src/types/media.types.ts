@@ -17,3 +17,12 @@ export interface MediaUploadOptions {
     quality?: number;
   };
 }
+
+export interface MediaResponse {
+  media: Media;
+  message?: string;
+}
+
+export interface MediaListResponse {
+  media: Media[];
+}

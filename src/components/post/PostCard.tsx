@@ -1,7 +1,14 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuthStore } from "@/store/authStore";
-import { MoreHorizontal, Pencil, Trash2 } from "lucide-react";
+import {
+  Bookmark,
+  Heart,
+  MessageCircle,
+  MoreHorizontal,
+  Pencil,
+  Trash2,
+} from "lucide-react";
 import {
   Card,
   CardContent,
@@ -37,16 +44,18 @@ interface PostCardProps {
 }
 
 const PostCard = ({ postId }: PostCardProps) => {
-  const { posts } = usePostsStore();
+  const { posts, deletePost } = usePostsStore();
   const { user } = useAuthStore();
   const [isDeleting, setIsDeleting] = useState(false);
   const [showDeleteAlert, setShowDeleteAlert] = useState(false);
+  const [isLiked, setIsLiked] = useState(false);
+  const [isBookmarked, setIsBookmarked] = useState(false);
 
   const post = posts.find((p) => p.id === postId);
 
-  if (!post) return null;
+  console.log("전체 포스트 데이터:", post);
 
-  const { deletePost } = usePostsStore();
+  if (!post) return null;
 
   const isAuthor = user?.id === post.user.id;
 
@@ -66,6 +75,22 @@ const PostCard = ({ postId }: PostCardProps) => {
       setShowDeleteAlert(false);
     }
   };
+
+  const handleLikeToggle = () => {
+    setIsLiked(!isLiked);
+    // TODO: Like Api
+    toast.success(isLiked ? "Post unliked" : "Post liked");
+  };
+
+  const handleBookmarkToggle = () => {
+    setIsBookmarked(!isBookmarked);
+    // TODO: Bookmark Api
+    toast.success(
+      isBookmarked ? "Post removed from bookmarks" : "Post saved to bookmarks"
+    );
+  };
+
+  console.log("Post media:", post.media);
 
   return (
     <Card className="mb-6 overflow-hidden">
@@ -123,23 +148,69 @@ const PostCard = ({ postId }: PostCardProps) => {
 
       {post.media && post.media.length > 0 && (
         <div className="w-full">
-          <ImageCarousel images={post.media} />
+          {/* 이미지가 있는지 확인하고, 각 이미지에 필요한 속성이 있는지 검증 */}
+          <ImageCarousel
+            images={post.media.filter(
+              (media) =>
+                media &&
+                typeof media === "object" &&
+                "mediaUrl" in media &&
+                media.mediaUrl
+            )}
+          />
         </div>
       )}
 
       <CardContent className="p-4">
-        {post.caption && (
-          <p className="mb-2 text-sm whitespace-pre-line">{post.caption}</p>
-        )}
-        <p className="text-xs text-muted-foreground">
+        <div className="flex justify-between mb-4">
+          <div className="flex space-x-2">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={handleLikeToggle}
+              className={isLiked ? "text-pink-500" : ""}
+            >
+              <Heart className={`h-6 w-6 ${isLiked ? "fill-current" : ""}`} />
+            </Button>
+            <Button variant="ghost" size="icon">
+              <MessageCircle className="h-6 w-6" />
+            </Button>
+          </div>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={handleBookmarkToggle}
+            className={isBookmarked ? "text-yellow-500" : ""}
+          >
+            <Bookmark
+              className={`h-6 w-6 ${isBookmarked ? "fill-current" : ""}`}
+            />
+          </Button>
+        </div>
+
+        <div className="flex items-start mb-3">
+          <Link
+            to={`/profile/${post.user.username}`}
+            className="font-semibold text-sm mr-2"
+          >
+            {post.user.username}
+          </Link>
+          {post.caption && (
+            <p className="text-sm whitespace-pre-line">{post.caption}</p>
+          )}
+        </div>
+
+        <p className="text-xs text-muted-foreground mt-2">
           {formatDate(post.createdAt)}
         </p>
       </CardContent>
 
-      <CardFooter className="p-4 pt-0 flex justify-between">
-        <Button variant="outline" size="sm" asChild>
-          <Link to={`/post/${post.id}`}>View Details</Link>
-        </Button>
+      <CardFooter className="p-4 pt-0">
+        {/* 댓글 입력 영역 추가하기 */}
+        <div className="w-full">
+          <p className="text-sm text-muted-foreground mb-2">Add Comment...</p>
+          {/* 여기에 댓글 입력 폼이 들어갑니다 */}
+        </div>
       </CardFooter>
 
       {/* Confirm delete */}

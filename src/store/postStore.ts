@@ -1,6 +1,12 @@
 import { create } from "zustand";
 import { api } from "./authStore";
-import { CreatePostData, Post, UpdatePostData } from "@/types/post.types";
+import {
+  CreatePostData,
+  Post,
+  PostResponse,
+  PostsResponse,
+  UpdatePostData,
+} from "@/types/post.types";
 
 interface PostsState {
   posts: Post[];
@@ -37,14 +43,24 @@ export const usePostsStore = create<PostsState>((set, get) => ({
       const params: any = { page, limit: 10 };
       if (userId) params.userId = userId;
 
-      const response = await api.get("/posts", { params });
+      const response = await api.get<PostsResponse>("/posts", { params });
 
-      set({
-        posts: response.data.posts,
-        totalPages: response.data.meta.totalPages,
-        currentPage: page,
-        isLoading: false,
-      });
+      // If page is 1,
+      if (page === 1) {
+        set({
+          posts: response.data.posts,
+          totalPages: response.data.meta.totalPages,
+          currentPage: page,
+          isLoading: false,
+        });
+      } else {
+        set((state) => ({
+          posts: [...state.posts, ...response.data.posts],
+          totalPages: response.data.meta.totalPages,
+          currentPage: page,
+          isLoading: false,
+        }));
+      }
     } catch (error: any) {
       console.error("Fetch posts error:", error);
       set({
@@ -58,7 +74,7 @@ export const usePostsStore = create<PostsState>((set, get) => ({
   fetchPostById: async (id: string) => {
     set({ isLoading: true, error: null });
     try {
-      const response = await api.get(`/posts/${id}`);
+      const response = await api.get<PostResponse>(`/posts/${id}`);
       set({ currentPost: response.data.post, isLoading: false });
     } catch (error: any) {
       console.error("Fetch post error:", error);
@@ -73,7 +89,7 @@ export const usePostsStore = create<PostsState>((set, get) => ({
   createPost: async (postData: CreatePostData) => {
     set({ isLoading: true, error: null });
     try {
-      const response = await api.post("/posts", postData);
+      const response = await api.post<PostResponse>("/posts", postData);
 
       // Add new post to the current post list
       const posts = [response.data.post, ...get().posts];
@@ -94,7 +110,7 @@ export const usePostsStore = create<PostsState>((set, get) => ({
   updatePost: async (id: string, postData: UpdatePostData) => {
     set({ isLoading: true, error: null });
     try {
-      const response = await api.post(`/posts/${id}`, postData);
+      const response = await api.post<PostResponse>(`/posts/${id}`, postData);
 
       // Update post list and current post
       const updatedPost = response.data.post;
@@ -147,7 +163,7 @@ export const usePostsStore = create<PostsState>((set, get) => ({
   ) => {
     set({ isLoading: true, error: null });
     try {
-      const response = await api.put(
+      const response = await api.put<PostResponse>(
         `/posts/${postId}/media-order`,
         mediaOrder
       );

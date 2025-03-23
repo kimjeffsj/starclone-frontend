@@ -23,3 +23,18 @@ export interface UpdatePostData {
   mediaIds?: string[];
   removeMediaIds?: string[];
 }
+
+export interface PostResponse {
+  post: Post;
+  message?: string;
+}
+
+export interface PostsResponse {
+  posts: Post[];
+  meta: {
+    total: number;
+    totalPages: number;
+    page: number;
+    limit: number;
+  };
+}
