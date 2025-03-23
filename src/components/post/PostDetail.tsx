@@ -1,7 +1,7 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { useAuthStore } from "@/store/authStore";
-import { ArrowLeft, MoreHorizontal, Pencil, Trash2 } from "lucide-react";
+import { ArrowLeft, Heart, MoreHorizontal, Pencil, Trash2 } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -33,14 +33,35 @@ import { usePostsStore } from "@/store/postStore";
 import { toast } from "sonner";
 import ImageCarousel from "../shared/media/ImageCarousel";
 import { formatDate } from "@/utils/formatDate.utils";
+import { useLikeStore } from "@/store/likeStore";
+import LikeUsersModal from "./LikeUsersModal";
 
 const PostDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { user } = useAuthStore();
+  const { checkLikeStatus } = useLikeStore();
+  const [showLikesModal, setShowLikesModal] = useState(false);
 
-  const { currentPost, fetchPostById, deletePost, isLoading, error } =
-    usePostsStore();
+  const {
+    currentPost,
+    fetchPostById,
+    deletePost,
+    likePost,
+    unlikePost,
+    isLoading,
+    error,
+  } = usePostsStore();
+
+  useEffect(() => {
+    const checkPostLikeStatus = async () => {
+      if (currentPost && currentPost.isLiked === undefined && id) {
+        await checkLikeStatus(id);
+      }
+    };
+
+    checkPostLikeStatus();
+  }, [currentPost, id, checkLikeStatus]);
 
   useEffect(() => {
     if (id) {
@@ -62,6 +83,24 @@ const PostDetail = () => {
     } catch (error: any) {
       toast.success("Post delete failed", {
         description: error.message || "Failed to delete post.",
+      });
+    }
+  };
+
+  const handleLikeToggle = async () => {
+    if (!currentPost) return;
+
+    try {
+      if (currentPost.isLiked) {
+        await unlikePost(currentPost.id);
+        toast.success("Post unliked");
+      } else {
+        await likePost(currentPost.id);
+        toast.success("Post liked");
+      }
+    } catch (error) {
+      toast.error("Action failed", {
+        description: "Failed to update like status",
       });
     }
   };
@@ -185,9 +224,41 @@ const PostDetail = () => {
         </div>
       )}
 
-      <CardContent className="pt-6">
+      <CardContent className="p-4">
+        <div className="flex justify-between mb-4">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={handleLikeToggle}
+            className={currentPost.isLiked ? "text-pink-500" : ""}
+          >
+            <Heart
+              className={`h-6 w-6 ${currentPost.isLiked ? "fill-current" : ""}`}
+            />
+            <span className="ml-2">{currentPost.likeCount || 0}</span>
+          </Button>
+        </div>
+
+        {currentPost.likeCount !== undefined && currentPost.likeCount > 0 && (
+          <div className="mb-4">
+            <Button
+              variant="link"
+              className="h-auto p-0 text-sm font-semibold flex items-center gap-1"
+              onClick={() => setShowLikesModal(true)}
+            >
+              <span>
+                {currentPost.likeCount}{" "}
+                {currentPost.likeCount === 1 ? "like" : "likes"}
+              </span>
+            </Button>
+          </div>
+        )}
+
         {currentPost.caption && (
-          <div className="mb-4 whitespace-pre-line">{currentPost.caption}</div>
+          <div className="mb-4 whitespace-pre-line">
+            <span className="font-semibold">{currentPost.user.username}</span>{" "}
+            {currentPost.caption}
+          </div>
         )}
 
         <p className="text-sm text-muted-foreground">
@@ -201,6 +272,15 @@ const PostDetail = () => {
           Go back
         </Button>
       </CardFooter>
+
+      {/* Likes Modal */}
+      {id && (
+        <LikeUsersModal
+          postId={id}
+          open={showLikesModal}
+          onOpenChange={setShowLikesModal}
+        />
+      )}
     </Card>
   );
 };

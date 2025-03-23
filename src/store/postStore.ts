@@ -7,6 +7,7 @@ import {
   PostsResponse,
   UpdatePostData,
 } from "@/types/post.types";
+import { useLikeStore } from "./likeStore";
 
 interface PostsState {
   posts: Post[];
@@ -24,6 +25,13 @@ interface PostsState {
     postId: string,
     mediaOrder: { mediaId: string; order: number }[]
   ) => Promise<Post | null>;
+  likePost: (postId: string) => Promise<void>;
+  unlikePost: (postId: string) => Promise<void>;
+  updatePostLikeStatus: (
+    postId: string,
+    isLiked: boolean,
+    likeCount?: number
+  ) => void;
   clearCurrentPost: () => void;
   clearError: () => void;
 }
@@ -191,6 +199,124 @@ export const usePostsStore = create<PostsState>((set, get) => ({
       });
       return null;
     }
+  },
+
+  // Like post
+  likePost: async (postId: string) => {
+    const likeStore = useLikeStore.getState();
+    try {
+      const response = await likeStore.likePost(postId);
+
+      // Update post in state with new like status
+      set((state) => {
+        // Update post list
+        const updatedPosts = state.posts.map((post) => {
+          if (post.id === postId) {
+            return {
+              ...post,
+              isLiked: true,
+              likeCount: response.likeCount,
+            };
+          }
+          return post;
+        });
+
+        // Update current post if it's the liked post
+        let updatedCurrentPost = state.currentPost;
+        if (state.currentPost && state.currentPost.id === postId) {
+          updatedCurrentPost = {
+            ...state.currentPost,
+            isLiked: true,
+            likeCount: response.likeCount,
+          };
+        }
+
+        return {
+          posts: updatedPosts,
+          currentPost: updatedCurrentPost,
+        };
+      });
+    } catch (error: any) {
+      console.error("Like post error:", error);
+    }
+  },
+
+  // Unlike post
+  unlikePost: async (postId: string) => {
+    const likeStore = useLikeStore.getState();
+    try {
+      const response = await likeStore.unlikePost(postId);
+
+      // Update post in state with new like status
+      set((state) => {
+        // Update post list
+        const updatedPosts = state.posts.map((post) => {
+          if (post.id === postId) {
+            return {
+              ...post,
+              isLiked: false,
+              likeCount: response.likeCount,
+            };
+          }
+          return post;
+        });
+
+        // Update current post if it's the unliked post
+        let updatedCurrentPost = state.currentPost;
+        if (state.currentPost && state.currentPost.id === postId) {
+          updatedCurrentPost = {
+            ...state.currentPost,
+            isLiked: false,
+            likeCount: response.likeCount,
+          };
+        }
+
+        return {
+          posts: updatedPosts,
+          currentPost: updatedCurrentPost,
+        };
+      });
+    } catch (error: any) {
+      console.error("Unlike post error:", error);
+    }
+  },
+
+  updatePostLikeStatus: (
+    postId: string,
+    isLiked: boolean,
+    likeCount?: number
+  ) => {
+    set((state) => {
+      // Update posts list
+      const updatedPosts = state.posts.map((post) => {
+        if (post.id === postId) {
+          return {
+            ...post,
+            isLiked: isLiked,
+            // Only update likeCount if provided, otherwise keep current
+            likeCount: likeCount !== undefined ? likeCount : post.likeCount,
+          };
+        }
+        return post;
+      });
+
+      // Update current post if it matches
+      let updatedCurrentPost = state.currentPost;
+      if (state.currentPost && state.currentPost.id === postId) {
+        updatedCurrentPost = {
+          ...state.currentPost,
+          isLiked: isLiked,
+          // Only update likeCount if provided, otherwise keep current
+          likeCount:
+            likeCount !== undefined ? likeCount : state.currentPost.likeCount,
+        };
+      }
+
+      return {
+        posts: updatedPosts,
+        currentPost: updatedCurrentPost,
+      };
+    });
   },
 
   // Clear current post

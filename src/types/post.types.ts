@@ -9,6 +9,8 @@ export interface Post {
   media: Media[];
   createdAt: string;
   updatedAt: string;
+  likeCount?: number;
+  isLiked?: boolean;
 }
 
 export interface CreatePostData {

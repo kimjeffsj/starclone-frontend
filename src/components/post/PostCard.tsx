@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuthStore } from "@/store/authStore";
 import {
@@ -38,22 +38,37 @@ import {
   AlertDialogTitle,
 } from "../ui/alert-dialog";
 import { formatDate } from "@/utils/formatDate.utils";
+import { useLikeStore } from "@/store/likeStore";
+import LikeUsersModal from "./LikeUsersModal";
 
 interface PostCardProps {
   postId: string;
 }
 
 const PostCard = ({ postId }: PostCardProps) => {
-  const { posts, deletePost } = usePostsStore();
+  const { posts, deletePost, likePost, unlikePost } = usePostsStore();
+  const { checkLikeStatus } = useLikeStore();
   const { user } = useAuthStore();
   const [isDeleting, setIsDeleting] = useState(false);
   const [showDeleteAlert, setShowDeleteAlert] = useState(false);
-  const [isLiked, setIsLiked] = useState(false);
+  const [showLikesModal, setShowLikesModal] = useState(false);
   const [isBookmarked, setIsBookmarked] = useState(false);
 
   const post = posts.find((p) => p.id === postId);
 
-  console.log("전체 포스트 데이터:", post);
+  useEffect(() => {
+    const checkPostLikeStatus = async () => {
+      try {
+        if (post && post.isLiked === undefined) {
+          await checkLikeStatus(postId);
+        }
+      } catch (error) {
+        console.error("Failed to check like status", error);
+      }
+    };
+
+    checkPostLikeStatus();
+  }, [post, postId, checkLikeStatus]);
 
   if (!post) return null;
 
@@ -76,10 +91,20 @@ const PostCard = ({ postId }: PostCardProps) => {
     }
   };
 
-  const handleLikeToggle = () => {
-    setIsLiked(!isLiked);
-    // TODO: Like Api
-    toast.success(isLiked ? "Post unliked" : "Post liked");
+  const handleLikeToggle = async () => {
+    try {
+      if (post.isLiked) {
+        await unlikePost(post.id);
+        toast.success("Post unliked");
+      } else {
+        await likePost(post.id);
+        toast.success("Post liked");
+      }
+    } catch (error) {
+      toast.error("Action failed", {
+        description: "Failed to update like status",
+      });
+    }
   };
 
   const handleBookmarkToggle = () => {
@@ -89,8 +114,6 @@ const PostCard = ({ postId }: PostCardProps) => {
       isBookmarked ? "Post removed from bookmarks" : "Post saved to bookmarks"
     );
   };
-
-  console.log("Post media:", post.media);
 
   return (
     <Card className="mb-6 overflow-hidden">
@@ -148,7 +171,6 @@ const PostCard = ({ postId }: PostCardProps) => {
 
       {post.media && post.media.length > 0 && (
         <div className="w-full">
-          {/* 이미지가 있는지 확인하고, 각 이미지에 필요한 속성이 있는지 검증 */}
           <ImageCarousel
             images={post.media.filter(
               (media) =>
@@ -168,9 +190,11 @@ const PostCard = ({ postId }: PostCardProps) => {
               variant="ghost"
               size="icon"
               onClick={handleLikeToggle}
-              className={isLiked ? "text-pink-500" : ""}
+              className={post.isLiked ? "text-pink-500" : ""}
             >
-              <Heart className={`h-6 w-6 ${isLiked ? "fill-current" : ""}`} />
+              <Heart
+                className={`h-6 w-6 ${post.isLiked ? "fill-current" : ""}`}
+              />
             </Button>
             <Button variant="ghost" size="icon">
               <MessageCircle className="h-6 w-6" />
@@ -187,6 +211,20 @@ const PostCard = ({ postId }: PostCardProps) => {
             />
           </Button>
         </div>
+
+        {post.likeCount !== undefined && post.likeCount > 0 && (
+          <div className="mb-4">
+            <Button
+              variant="link"
+              className="h-auto p-0 text-sm font-semibold flex items-center gap-1"
+              onClick={() => setShowLikesModal(true)}
+            >
+              <span>
+                {post.likeCount} {post.likeCount === 1 ? "like" : "likes"}
+              </span>
+            </Button>
+          </div>
+        )}
 
         <div className="flex items-start mb-3">
           <Link
@@ -237,6 +275,13 @@ const PostCard = ({ postId }: PostCardProps) => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Likes Modal */}
+      <LikeUsersModal
+        postId={postId}
+        open={showLikesModal}
+        onOpenChange={setShowLikesModal}
+      />
     </Card>
   );
 };

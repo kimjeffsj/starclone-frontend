@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { api } from "../store/authStore";
 import PostList from "../components/post/PostList";
-import { User } from "@/types/auth.types";
+import { AuthResponse, User } from "@/types/auth.types";
 import MediaUploader from "@/components/shared/media/MediaUploader";
 
 const ProfilePage = () => {
@@ -18,7 +18,7 @@ const ProfilePage = () => {
       try {
         // Use /auth/me temporarily if there's no user profile API
         // In practice, an API endpoint like /users/:username should be used
-        const response = await api.get(`/auth/me`);
+        const response = await api.get<AuthResponse>(`/auth/me`);
         setUser(response.data.user);
       } catch (err: any) {
         console.error("Failed to fetch profile:", err);
@@ -80,7 +80,7 @@ const ProfilePage = () => {
             {/* Profile image upload button */}
             <button
               onClick={() => setIsEditingProfile(!isEditingProfile)}
-              className="absolute bottom-0 right-0 p-1 text-white bg-blue-500 rounded-full hover:bg-blue-600"
+              className="absolute bottom-0 right-0 p-1 text-white bg-primary rounded-full hover:bg-primary/90"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
