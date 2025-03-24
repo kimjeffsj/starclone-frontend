@@ -92,6 +92,8 @@ const PostCard = ({ postId }: PostCardProps) => {
   };
 
   const handleLikeToggle = async () => {
+    if (!post) return;
+
     try {
       if (post.isLiked) {
         await unlikePost(post.id);

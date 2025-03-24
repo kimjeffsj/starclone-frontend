@@ -117,7 +117,13 @@ const PostForm = () => {
           toast.success("Post created", {
             description: "New post has been successfully created.",
           });
-          navigate(`/post/${newPost.id}`);
+
+          console.log("New post ID:", newPost.id);
+          console.log("New post data:", newPost);
+
+          setTimeout(() => {
+            navigate(`/post/${newPost.id}`);
+          }, 300);
         }
       }
     } catch (error: any) {

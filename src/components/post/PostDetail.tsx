@@ -1,7 +1,15 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { useAuthStore } from "@/store/authStore";
-import { ArrowLeft, Heart, MoreHorizontal, Pencil, Trash2 } from "lucide-react";
+import {
+  ArrowLeft,
+  Bookmark,
+  Heart,
+  MessageCircle,
+  MoreHorizontal,
+  Pencil,
+  Trash2,
+} from "lucide-react";
 import {
   Card,
   CardContent,
@@ -42,6 +50,7 @@ const PostDetail = () => {
   const { user } = useAuthStore();
   const { checkLikeStatus } = useLikeStore();
   const [showLikesModal, setShowLikesModal] = useState(false);
+  const [isBookmarked, setIsBookmarked] = useState(false);
 
   const {
     currentPost,
@@ -65,6 +74,7 @@ const PostDetail = () => {
 
   useEffect(() => {
     if (id) {
+      console.log("PostDetail mounted with ID:", id);
       fetchPostById(id);
     }
   }, [id, fetchPostById]);
@@ -103,6 +113,14 @@ const PostDetail = () => {
         description: "Failed to update like status",
       });
     }
+  };
+
+  const handleBookmarkToggle = () => {
+    setIsBookmarked(!isBookmarked);
+    // TODO: Bookmark Api
+    toast.success(
+      isBookmarked ? "Post removed from bookmarks" : "Post saved to bookmarks"
+    );
   };
 
   if (isLoading) {
@@ -226,16 +244,32 @@ const PostDetail = () => {
 
       <CardContent className="p-4">
         <div className="flex justify-between mb-4">
+          <div className="flex space-x-2">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={handleLikeToggle}
+              className={currentPost.isLiked ? "text-pink-500" : ""}
+            >
+              <Heart
+                className={`h-6 w-6 ${
+                  currentPost.isLiked ? "fill-current" : ""
+                }`}
+              />
+            </Button>
+            <Button variant="ghost" size="icon">
+              <MessageCircle className="h-6 w-6" />
+            </Button>
+          </div>
           <Button
             variant="ghost"
             size="icon"
-            onClick={handleLikeToggle}
-            className={currentPost.isLiked ? "text-pink-500" : ""}
+            onClick={handleBookmarkToggle}
+            className={isBookmarked ? "text-yellow-500" : ""}
           >
-            <Heart
-              className={`h-6 w-6 ${currentPost.isLiked ? "fill-current" : ""}`}
+            <Bookmark
+              className={`h-6 w-6 ${isBookmarked ? "fill-current" : ""}`}
             />
-            <span className="ml-2">{currentPost.likeCount || 0}</span>
           </Button>
         </div>
 

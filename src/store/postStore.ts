@@ -82,8 +82,8 @@ export const usePostsStore = create<PostsState>((set, get) => ({
   fetchPostById: async (id: string) => {
     set({ isLoading: true, error: null });
     try {
-      const response = await api.get<PostResponse>(`/posts/${id}`);
-      set({ currentPost: response.data.post, isLoading: false });
+      const response = await api.get<Post>(`/posts/${id}`);
+      set({ currentPost: response.data, isLoading: false });
     } catch (error: any) {
       console.error("Fetch post error:", error);
       set({
@@ -99,11 +99,16 @@ export const usePostsStore = create<PostsState>((set, get) => ({
     try {
       const response = await api.post<PostResponse>("/posts", postData);
 
-      // Add new post to the current post list
-      const posts = [response.data.post, ...get().posts];
-      set({ posts, isLoading: false });
+      const newPost = response.data.post;
+      const posts = [newPost, ...get().posts];
 
-      return response.data.post;
+      set({
+        posts,
+        currentPost: newPost,
+        isLoading: false,
+      });
+
+      return newPost;
     } catch (error: any) {
       console.error("Create post error:", error);
       set({
