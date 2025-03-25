@@ -141,8 +141,10 @@ const ProfilePage = () => {
       </div>
 
       {/* User posts */}
-      <h2 className="mb-4 text-xl font-bold">Posts</h2>
-      <PostList userId={user.id} />
+      <div className="max-w-2xl mx-auto">
+        <h2 className="mb-4 text-xl font-bold">Posts</h2>
+        <PostList userId={user.id} />
+      </div>
     </div>
   );
 };
