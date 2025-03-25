@@ -40,6 +40,8 @@ import {
 import { formatDate } from "@/utils/formatDate.utils";
 import { useLikeStore } from "@/store/likeStore";
 import LikeUsersModal from "./LikeUsersModal";
+import CommentForm from "./CommentForm";
+import CommentList from "./CommentList";
 
 interface PostCardProps {
   postId: string;
@@ -243,15 +245,17 @@ const PostCard = ({ postId }: PostCardProps) => {
         <p className="text-xs text-muted-foreground mt-2">
           {formatDate(post.createdAt)}
         </p>
-      </CardContent>
 
-      <CardFooter className="p-4 pt-0">
-        {/* 댓글 입력 영역 추가하기 */}
-        <div className="w-full">
-          <p className="text-sm text-muted-foreground mb-2">Add Comment...</p>
-          {/* 여기에 댓글 입력 폼이 들어갑니다 */}
+        <div className="mt-4 border-t pt-4">
+          <h3 className="text-xs font-semibold mb-4">Comments</h3>
+
+          <CommentList postId={post.id} maxDisplay={2} />
+
+          <div className="mt-4">
+            <CommentForm postId={post.id} />
+          </div>
         </div>
-      </CardFooter>
+      </CardContent>
 
       {/* Confirm delete */}
       <AlertDialog open={showDeleteAlert} onOpenChange={setShowDeleteAlert}>

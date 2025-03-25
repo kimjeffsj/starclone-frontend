@@ -43,6 +43,8 @@ import ImageCarousel from "../shared/media/ImageCarousel";
 import { formatDate } from "@/utils/formatDate.utils";
 import { useLikeStore } from "@/store/likeStore";
 import LikeUsersModal from "./LikeUsersModal";
+import CommentList from "./CommentList";
+import CommentForm from "./CommentForm";
 
 const PostDetail = () => {
   const { id } = useParams();
@@ -298,13 +300,25 @@ const PostDetail = () => {
         <p className="text-sm text-muted-foreground">
           {formatDate(currentPost.createdAt)}
         </p>
+
+        <div className="mt-4 border-t pt-4">
+          <h3 className="text-xs font-semibold mb-4">Comments</h3>
+
+          <CommentList postId={currentPost.id} showAll={true} />
+
+          <div className="mt-4">
+            <CommentForm postId={currentPost.id} />
+          </div>
+        </div>
       </CardContent>
 
-      <CardFooter className="flex justify-between">
-        <Button variant="outline" size="sm" onClick={() => navigate(-1)}>
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          Go back
-        </Button>
+      <CardFooter className="flex flex-col items-stretch">
+        <div className="flex justify-between w-full mb-4">
+          <Button variant="outline" size="sm" onClick={() => navigate(-1)}>
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Go back
+          </Button>
+        </div>
       </CardFooter>
 
       {/* Likes Modal */}
