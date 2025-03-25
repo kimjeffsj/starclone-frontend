@@ -1,4 +1,5 @@
 import { User } from "./auth.types";
+import { Meta } from "./common.types";
 import { Media } from "./media.types";
 
 export interface Post {
@@ -33,10 +34,5 @@ export interface PostResponse {
 
 export interface PostsResponse {
   posts: Post[];
-  meta: {
-    total: number;
-    totalPages: number;
-    page: number;
-    limit: number;
-  };
+  meta: Meta;
 }

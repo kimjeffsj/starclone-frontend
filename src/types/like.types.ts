@@ -1,4 +1,5 @@
 import { User } from "./auth.types";
+import { Meta } from "./common.types";
 
 export interface LikeStatus {
   liked: boolean;
@@ -12,10 +13,5 @@ export interface LikeResponse {
 
 export interface LikesListResponse {
   likes: User[];
-  meta: {
-    total: number;
-    totalPages: number;
-    page: number;
-    limit: number;
-  };
+  meta: Meta;
 }

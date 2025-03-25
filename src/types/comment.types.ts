@@ -1,4 +1,5 @@
 import { User } from "./auth.types";
+import { Meta } from "./common.types";
 
 export interface Comment {
   id: string;
@@ -25,10 +26,5 @@ export interface CommentResponse {
 
 export interface CommentsResponse {
   comments: Comment[];
-  meta: {
-    total: number;
-    totalPages: number;
-    page: number;
-    limit: number;
-  };
+  meta: Meta;
 }
