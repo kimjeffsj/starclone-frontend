@@ -45,19 +45,6 @@ const EditProfileForm = ({
             onSubmit={form.handleSubmit(handleProfileUpdate)}
             className="space-y-4"
           >
-            {/* <div className="flex justify-center mb-4">
-              <div className="relative">
-                <Avatar className="w-24 h-24 border-2 border-background">
-                  <AvatarImage src={user.profileImageUrl} alt={user.username} />
-                  <AvatarFallback className="text-2xl bg-primary/10">
-                    {user.username.charAt(0).toUpperCase()}
-                  </AvatarFallback>
-                </Avatar>
-
-                <MediaUploader type="profile" multiple={false} />
-              </div>
-            </div> */}
-
             <FormField
               control={form.control}
               name="fullName"
