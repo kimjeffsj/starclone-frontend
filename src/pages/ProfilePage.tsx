@@ -4,6 +4,8 @@ import { api } from "../store/authStore";
 import PostList from "../components/post/PostList";
 import { AuthResponse, User } from "@/types/auth.types";
 import MediaUploader from "@/components/shared/media/MediaUploader";
+import FollowStats from "@/components/follow/FollowStats";
+import FollowButton from "@/components/follow/FollowButton";
 
 const ProfilePage = () => {
   const { username } = useParams<{ username: string }>();
@@ -107,8 +109,14 @@ const ProfilePage = () => {
 
           {/* Profile information */}
           <div className="flex-1 text-center md:text-left">
-            <h1 className="mb-2 text-2xl font-bold">{user.username}</h1>
-            <p className="mb-2 text-lg text-gray-700">{user.fullName}</p>
+            <div className="flex flex-col md:flex-row md:items-center gap-2 md:justify-between mb-2">
+              <h1 className="text-2xl font-bold">{user.username}</h1>
+              <FollowButton username={user.username} />
+            </div>
+
+            <FollowStats username={user.username} />
+
+            <p className="mt-3 mb-2 text-lg text-gray-700">{user.fullName}</p>
 
             {user.bio && <p className="mb-2 text-gray-600">{user.bio}</p>}
 
