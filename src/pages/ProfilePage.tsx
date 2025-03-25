@@ -94,7 +94,7 @@ const ProfilePage = () => {
 
   if (error) {
     return (
-      <div className="max-w-3xl mx-auto p-6 bg-destructive/10 rounded-lg border border-destructive/30 text-destructive text-center">
+      <div className="max-w-2xl mx-auto p-6 bg-destructive/10 rounded-lg border border-destructive/30 text-destructive text-center">
         <h2 className="text-xl font-semibold mb-2">Error Loading Profile</h2>
         <p>{error}</p>
         <Button variant="outline" className="mt-4" asChild>
@@ -193,7 +193,7 @@ const ProfilePage = () => {
 
       {/* Content Tabs */}
       <Tabs defaultValue="posts" value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="w-full justify-start mb-6 bg-card rounded-lg p-1 border shadow-sm">
+        <TabsList className="w-full justify-start mb-4 bg-card rounded-lg p-1 border shadow-sm">
           <TabsTrigger value="posts" className="flex items-center gap-2">
             <Grid className="h-4 w-4" />
             <span>Posts</span>
@@ -237,6 +237,7 @@ const ProfilePage = () => {
         </TabsContent>
       </Tabs>
 
+      {/* Change profile image */}
       <ChangeProfileImage
         changeProfileImageOpen={changeProfileImageOpen}
         setChangeProfileImageOpen={setChangeProfileImageOpen}

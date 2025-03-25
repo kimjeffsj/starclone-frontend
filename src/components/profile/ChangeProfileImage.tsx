@@ -11,6 +11,7 @@ import {
   AlertDialogTitle,
 } from "../ui/alert-dialog";
 import { Button } from "../ui/button";
+import { ArrowDown, ArrowRight, X } from "lucide-react";
 
 interface ChangeProfileImageProps {
   changeProfileImageOpen: boolean;
@@ -25,38 +26,64 @@ const ChangeProfileImage = ({
   onProfileImageChange,
   currentProfileImage,
 }: ChangeProfileImageProps) => {
-  const { uploadedMedia, clearUploadedMedia } = useMediaStore();
+  const {
+    previewMedia,
+    clearUploadedMedia,
+    clearPreviews,
+    uploadAllPreviews,
+    removePreview,
+  } = useMediaStore();
+
   const [showWarning, setShowWarning] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
 
   useEffect(() => {
     return () => {
       clearUploadedMedia();
+      clearPreviews();
     };
-  }, [clearUploadedMedia]);
+  }, [clearUploadedMedia, clearPreviews]);
 
   const handleSaveImage = async () => {
-    if (uploadedMedia.length === 0) {
+    if (previewMedia.length === 0) {
       toast.error("Please upload an image first");
       return;
     }
 
+    setIsUploading(true);
+
     try {
-      const imageUrl = uploadedMedia[0].mediaUrl;
+      const options = {
+        type: "profile" as const,
+        resize: {
+          width: 400,
+          quality: 80,
+        },
+      };
 
-      if (onProfileImageChange) {
-        onProfileImageChange(imageUrl);
+      const uploadedMedia = await uploadAllPreviews(options);
+
+      if (uploadedMedia.length > 0) {
+        const imageUrl = uploadedMedia[0].mediaUrl;
+        if (onProfileImageChange) {
+          onProfileImageChange(imageUrl);
+        }
+        toast.success("Profile image updated successfully");
+        setChangeProfileImageOpen(false);
+      } else {
+        toast.error("Failed to upload profile image");
       }
-
-      toast.success("Profile image updated successfully");
-      setChangeProfileImageOpen(false);
-      clearUploadedMedia();
     } catch (error) {
-      toast.error("Failed to update profile image");
+      toast.error("Failed to upload profile image");
+    } finally {
+      setIsUploading(false);
+      clearUploadedMedia();
+      clearPreviews();
     }
   };
 
   const handleCloseModal = () => {
-    if (uploadedMedia.length > 0) {
+    if (previewMedia.length > 0) {
       setShowWarning(true);
     } else {
       setChangeProfileImageOpen(false);
@@ -65,8 +92,17 @@ const ChangeProfileImage = ({
 
   const handleConfirmClose = () => {
     clearUploadedMedia();
+    clearPreviews();
     setShowWarning(false);
     setChangeProfileImageOpen(false);
+  };
+
+  const handleRemoveNewImage = () => {
+    if (previewMedia.length > 0) {
+      // previewMedia의 첫 번째 항목 삭제
+      removePreview(previewMedia[0].id);
+      toast.info("New image removed");
+    }
   };
 
   return (
@@ -79,52 +115,92 @@ const ChangeProfileImage = ({
           <AlertDialogHeader>
             <AlertDialogTitle>Change Profile Image</AlertDialogTitle>
             <AlertDialogDescription>
-              Upload a new profile image. The changes will apply once you save.
+              Upload a new profile image and click Save to apply changes.
             </AlertDialogDescription>
           </AlertDialogHeader>
 
           <div className="py-4">
-            <MediaUploader type="profile" multiple={false} />
+            {previewMedia.length === 0 ? (
+              <MediaUploader
+                type="profile"
+                multiple={false}
+                showPreview={false}
+              />
+            ) : null}
 
-            <div className="mt-4 flex items-center justify-center gap-4">
-              {currentProfileImage && !uploadedMedia.length && (
-                <div className="text-center">
-                  <p className="text-sm text-muted-foreground mb-2">
-                    Current Image
-                  </p>
-                  <img
-                    src={currentProfileImage}
-                    alt="Current profile"
-                    className="w-32 h-32 rounded-full object-cover border-4 border-background"
-                  />
-                </div>
-              )}
+            <div className="mt-6">
+              <div className="flex flex-col md:flex-row items-center justify-center gap-6">
+                {/* Current image */}
+                {currentProfileImage && (
+                  <div className="text-center">
+                    <p className="text-sm font-medium text-muted-foreground mb-2">
+                      Current image
+                    </p>
+                    <div className="relative">
+                      <img
+                        src={currentProfileImage}
+                        alt="Current profile"
+                        className="w-32 h-32 rounded-full object-cover border-4 border-background"
+                      />
+                    </div>
+                  </div>
+                )}
 
-              {uploadedMedia.length > 0 && (
-                <div className="text-center">
-                  <p className="text-sm text-muted-foreground mb-2">
-                    New Image
-                  </p>
-                  <img
-                    src={uploadedMedia[0].mediaUrl}
-                    alt="New profile"
-                    className="w-32 h-32 rounded-full object-cover border-4 border-background"
-                  />
-                </div>
-              )}
+                {currentProfileImage && previewMedia.length > 0 && (
+                  <div className="flex items-center justify-center md:h-32">
+                    <div className="hidden md:block">
+                      <ArrowRight className="h-8 w-8 text-muted-foreground" />
+                    </div>
+                    <div className="block md:hidden">
+                      <ArrowDown className="h-8 w-8 text-muted-foreground" />
+                    </div>
+                  </div>
+                )}
+
+                {/* New image */}
+                {previewMedia.length > 0 && (
+                  <div className="text-center">
+                    <p className="text-sm font-medium text-primary mb-2">
+                      New image
+                    </p>
+                    <div className="relative">
+                      <img
+                        src={previewMedia[0].previewUrl}
+                        alt="New profile"
+                        className="w-32 h-32 rounded-full object-cover border-4 border-primary/50"
+                      />
+
+                      <Button
+                        type="button"
+                        size="icon"
+                        variant="destructive"
+                        className="absolute -top-2 -right-2 rounded-full shadow-md h-8 w-8"
+                        onClick={handleRemoveNewImage}
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
 
           <AlertDialogFooter>
-            <Button type="button" variant="outline" onClick={handleCloseModal}>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handleCloseModal}
+              disabled={isUploading}
+            >
               Cancel
             </Button>
             <Button
               type="button"
               onClick={handleSaveImage}
-              disabled={uploadedMedia.length === 0}
+              disabled={previewMedia.length === 0 || isUploading}
             >
-              Save
+              {isUploading ? "Saving..." : "Save"}
             </Button>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -136,7 +212,7 @@ const ChangeProfileImage = ({
           <AlertDialogHeader>
             <AlertDialogTitle>Discard Changes?</AlertDialogTitle>
             <AlertDialogDescription>
-              You have uploaded a new profile image. If you close without
+              You have selected a new profile image. If you close without
               saving, your changes will be lost.
             </AlertDialogDescription>
           </AlertDialogHeader>

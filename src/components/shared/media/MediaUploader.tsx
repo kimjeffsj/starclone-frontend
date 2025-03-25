@@ -1,63 +1,65 @@
 import { ImageIcon, Upload } from "lucide-react";
 import { Progress } from "../../ui/progress";
-import { useRef, useState } from "react";
+import { ChangeEvent, useRef, useState } from "react";
 import { toast } from "sonner";
 import { useMediaStore } from "@/store/mediaStore";
+import { Button } from "@/components/ui/button";
 
 interface MediaUploaderProps {
   type: "profile" | "post";
   postId?: string;
   multiple?: boolean;
+  showPreview?: boolean;
 }
 
 const MediaUploader = ({
   type,
-  postId,
+  // postId,
   multiple = true,
+  showPreview = true,
 }: MediaUploaderProps) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isDragging, setIsDragging] = useState(false);
 
   const {
-    uploadMedia,
-    uploadMultipleMedia,
+    previewMedia,
+    addPreview,
+    removePreview,
     isUploading,
     uploadProgress,
     error,
   } = useMediaStore();
 
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (e: ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
 
     try {
-      const options = {
-        type,
-        postId,
-        resize: {
-          width: type === "profile" ? 400 : 1080,
-          quality: 80,
-        },
-      };
+      const imageFiles = Array.from(files).filter((file) =>
+        file.type.startsWith("image/")
+      );
 
-      if (multiple && files.length > 1) {
-        await uploadMultipleMedia(Array.from(files), options);
-        toast.success("Upload successful ", {
-          description: `${files.length} files have been uploaded.`,
+      if (imageFiles.length === 0) {
+        toast.error("Not supported file", {
+          description: "Only image files can be uploaded.",
         });
-      } else {
-        await uploadMedia(files[0], options);
-        toast.success("Upload successful", {
-          description: "File has been uploaded.",
-        });
+        return;
       }
+
+      // Add preview
+      addPreview(imageFiles);
+      toast.success("Images added to preview", {
+        description: `${imageFiles.length} ${
+          imageFiles.length > 1 ? "files" : "file"
+        } ready for upload.`,
+      });
     } catch (error: any) {
-      toast.error("Upload failed", {
-        description: error.message || "Failed to upload file.",
+      toast.error("Failed to process files", {
+        description: error.message || "Please try again.",
       });
     }
 
-    // Input fields reset
+    // Reset fields
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
@@ -79,7 +81,7 @@ const MediaUploader = ({
     const files = e.dataTransfer.files;
     if (!files || files.length === 0) return;
 
-    // Filter image files
+    // Filter images
     const imageFiles = Array.from(files).filter((file) =>
       file.type.startsWith("image/")
     );
@@ -92,31 +94,52 @@ const MediaUploader = ({
     }
 
     try {
-      const options = {
-        type,
-        postId,
-        resize: {
-          width: type === "profile" ? 400 : 1080,
-          quality: 80,
-        },
-      };
-
-      if (multiple && imageFiles.length > 1) {
-        await uploadMultipleMedia(imageFiles, options);
-        toast.success("Upload successful", {
-          description: `${imageFiles.length} files have been uploaded.`,
-        });
-      } else {
-        await uploadMedia(imageFiles[0], options);
-        toast.success("Upload successful", {
-          description: "File has been uploaded.",
-        });
-      }
+      addPreview(imageFiles);
+      toast.success("Images added to preview", {
+        description: `${imageFiles.length} ${
+          imageFiles.length > 1 ? "files" : "file"
+        } ready for upload.`,
+      });
     } catch (error: any) {
-      toast.error("Upload failed", {
-        description: error.message || "Failed to upload file.",
+      toast.error("Failed to process files", {
+        description: error.message || "Please try again.",
       });
     }
+  };
+
+  const renderPreviews = () => {
+    if (!showPreview || previewMedia.length === 0) return null;
+
+    return (
+      <div className="mt-4">
+        <h3 className="text-sm font-medium mb-2">
+          Preview ({previewMedia.length})
+        </h3>
+        <div className="grid grid-cols-3 gap-2">
+          {previewMedia.map((media) => (
+            <div
+              key={media.id}
+              className="relative group overflow-hidden rounded-md aspect-square"
+            >
+              <img
+                src={media.previewUrl}
+                alt="Preview"
+                className="w-full h-full object-cover"
+              />
+              <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={() => removePreview(media.id)}
+                >
+                  Remove
+                </Button>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
   };
 
   return (
@@ -184,6 +207,9 @@ const MediaUploader = ({
           disabled={isUploading}
         />
       </div>
+
+      {/* Preview */}
+      {renderPreviews()}
     </div>
   );
 };

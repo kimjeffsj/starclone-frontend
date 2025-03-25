@@ -135,7 +135,7 @@ const PostDetail = () => {
 
   if (error) {
     return (
-      <div className="max-w-3xl mx-auto mt-8 p-4 bg-destructive/10 text-destructive rounded-md">
+      <div className="max-w-2xl mx-auto mt-8 p-4 bg-destructive/10 text-destructive rounded-md">
         <p className="font-medium">{error}</p>
         <Button variant="outline" onClick={() => navigate(-1)} className="mt-4">
           <ArrowLeft className="mr-2 h-4 w-4" />
@@ -147,7 +147,7 @@ const PostDetail = () => {
 
   if (!currentPost) {
     return (
-      <div className="max-w-3xl mx-auto mt-8 p-8 text-center">
+      <div className="max-w-2xl mx-auto mt-8 p-8 text-center">
         <h2 className="text-2xl font-semibold mb-4">Post not found</h2>
         <Button onClick={() => navigate("/")}>Home</Button>
       </div>
@@ -157,7 +157,7 @@ const PostDetail = () => {
   const isAuthor = user?.id === currentPost.user.id;
 
   return (
-    <Card className="max-w-3xl mx-auto">
+    <Card className="max-w-2xl mx-auto">
       <CardHeader className="flex flex-row items-center space-y-0 gap-2">
         <Link
           to={`/profile/${currentPost.user.username}`}

@@ -22,12 +22,10 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { FormInput, formSchema } from "./validations/post.schema";
 import { usePostsStore } from "@/store/postStore";
 import { toast } from "sonner";
 import MediaUploader from "../shared/media/MediaUploader";
-import MediaPreview from "../shared/media/MediaPreview";
 
 const PostForm = () => {
   const { id } = useParams(); // Post ID used in edit mode
@@ -36,7 +34,11 @@ const PostForm = () => {
 
   // List of media IDs to remove (only used in edit mode)
   const [removeMediaIds, setRemoveMediaIds] = useState<string[]>([]);
-  const { uploadedMedia, clearUploadedMedia } = useMediaStore();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const { previewMedia, clearUploadedMedia, clearPreviews, uploadAllPreviews } =
+    useMediaStore();
+
   const {
     currentPost,
     fetchPostById,
@@ -64,8 +66,16 @@ const PostForm = () => {
     return () => {
       clearCurrentPost();
       clearUploadedMedia();
+      clearPreviews();
     };
-  }, [isEditMode, id, fetchPostById, clearCurrentPost, clearUploadedMedia]);
+  }, [
+    isEditMode,
+    id,
+    fetchPostById,
+    clearCurrentPost,
+    clearUploadedMedia,
+    clearPreviews,
+  ]);
 
   // Initialize form with existing post information in edit mode
   useEffect(() => {
@@ -79,12 +89,41 @@ const PostForm = () => {
 
   // Form submission handler
   const onSubmit = async (values: FormInput) => {
-    // Uploaded media ID list
-    const mediaIds = uploadedMedia.map((media) => media.id);
+    // 미리보기가 없고 편집 중이 아니거나 기존 이미지를 모두 삭제하려는 경우
+    if (
+      previewMedia.length === 0 &&
+      (!isEditMode ||
+        (currentPost?.media &&
+          removeMediaIds.length >= currentPost.media.length))
+    ) {
+      toast.error("Image required", {
+        description: "You must have at least one image for your post.",
+      });
+      return;
+    }
+
+    setIsSubmitting(true);
 
     try {
+      // 1. 미리보기 이미지 업로드
+      let mediaIds: string[] = [];
+
+      if (previewMedia.length > 0) {
+        const options = {
+          type: "post" as const,
+          postId: id, // 편집 모드일 경우 postId 전달
+          resize: {
+            width: 1080,
+            quality: 80,
+          },
+        };
+
+        const uploadedItems = await uploadAllPreviews(options);
+        mediaIds = uploadedItems.map((media) => media.id);
+      }
+
+      // 2. 게시물 생성 또는 업데이트
       if (isEditMode && id) {
-        // Edit mode: Update existing post
         const updateData = {
           ...values,
           mediaIds: mediaIds.length > 0 ? mediaIds : undefined,
@@ -100,14 +139,6 @@ const PostForm = () => {
           navigate(`/post/${updatedPost.id}`);
         }
       } else {
-        // Create mode: Create new post
-        if (mediaIds.length === 0) {
-          toast("Image required", {
-            description: "You must upload at least one image.",
-          });
-          return;
-        }
-
         const newPost = await createPost({
           ...values,
           mediaIds,
@@ -117,30 +148,26 @@ const PostForm = () => {
           toast.success("Post created", {
             description: "New post has been successfully created.",
           });
-
-          console.log("New post ID:", newPost.id);
-          console.log("New post data:", newPost);
-
-          setTimeout(() => {
-            navigate(`/post/${newPost.id}`);
-          }, 300);
+          navigate(`/post/${newPost.id}`);
         }
       }
     } catch (error: any) {
       toast.error(isEditMode ? "Post update failed" : "Post create failed", {
         description: error.message || "An error occurred. Please try again.",
       });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
-  // Handle removing existing media (edit mode)
-  const handleRemoveExistingMedia = (mediaId: string) => {
-    setRemoveMediaIds((prev) => [...prev, mediaId]);
-  };
-
-  // Handle undoing removal (edit mode)
-  const handleUndoRemove = (mediaId: string) => {
-    setRemoveMediaIds((prev) => prev.filter((id) => id !== mediaId));
+  const toggleRemoveMedia = (mediaId: string) => {
+    if (removeMediaIds.includes(mediaId)) {
+      // 이미 제거 목록에 있으면 제거 취소
+      setRemoveMediaIds((prev) => prev.filter((id) => id !== mediaId));
+    } else {
+      // 제거 목록에 추가
+      setRemoveMediaIds((prev) => [...prev, mediaId]);
+    }
   };
 
   if (isEditMode && isLoading && !currentPost) {
@@ -152,7 +179,7 @@ const PostForm = () => {
   }
 
   return (
-    <Card className="max-w-3xl mx-auto">
+    <Card className="max-w-2xl mx-auto">
       <CardHeader>
         <CardTitle>{isEditMode ? "Edit Post" : "Create New Post"}</CardTitle>
         <CardDescription>
@@ -164,91 +191,52 @@ const PostForm = () => {
       <CardContent>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            {/* Media uploader */}
+            {/* 미디어 업로더 */}
             <FormItem>
               <FormLabel>Upload Images</FormLabel>
-              <MediaUploader type="post" postId={id} />
+              <MediaUploader type="post" multiple={true} showPreview={true} />
             </FormItem>
 
-            {/* Uploaded media preview */}
-            {uploadedMedia.length > 0 && (
-              <FormItem>
-                <FormLabel>Newly Uploaded Images</FormLabel>
-                <MediaPreview media={uploadedMedia} showRemoveButton />
-              </FormItem>
-            )}
-
-            {/* Existing media preview (edit mode) */}
+            {/* 기존 이미지 (편집 모드) */}
             {isEditMode &&
               currentPost?.media &&
               currentPost.media.length > 0 && (
-                <div className="space-y-4">
-                  <FormItem>
-                    <FormLabel>Existing Images</FormLabel>
-                    <div className="grid grid-cols-3 gap-2">
-                      {currentPost.media
-                        .filter((media) => !removeMediaIds.includes(media.id))
-                        .map((media) => (
-                          <div
-                            key={media.id}
-                            className="relative group overflow-hidden rounded-md aspect-square"
+                <FormItem>
+                  <FormLabel>Current Images</FormLabel>
+                  <div className="grid grid-cols-3 gap-2">
+                    {currentPost.media.map((media) => (
+                      <div
+                        key={media.id}
+                        className={`
+                        relative group overflow-hidden rounded-md aspect-square
+                        ${removeMediaIds.includes(media.id) ? "opacity-50" : ""}
+                      `}
+                      >
+                        <img
+                          src={media.mediaUrl}
+                          alt="Media"
+                          className="w-full h-full object-cover"
+                        />
+                        <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                          <Button
+                            type="button"
+                            variant={
+                              removeMediaIds.includes(media.id)
+                                ? "secondary"
+                                : "destructive"
+                            }
+                            size="sm"
+                            onClick={() => toggleRemoveMedia(media.id)}
                           >
-                            <img
-                              src={media.mediaUrl}
-                              alt="Media"
-                              className="w-full h-full object-cover"
-                            />
-                            <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                              <Button
-                                variant="destructive"
-                                size="sm"
-                                onClick={() =>
-                                  handleRemoveExistingMedia(media.id)
-                                }
-                              >
-                                Remove
-                              </Button>
-                            </div>
-                          </div>
-                        ))}
-                    </div>
-                  </FormItem>
-
-                  {/* Display media to be removed */}
-                  {removeMediaIds.length > 0 && (
-                    <FormItem>
-                      <FormLabel>Images to be Removed</FormLabel>
-                      <div className="grid grid-cols-3 gap-2">
-                        {currentPost.media
-                          .filter((media) => removeMediaIds.includes(media.id))
-                          .map((media) => (
-                            <div
-                              key={media.id}
-                              className="relative group overflow-hidden rounded-md aspect-square"
-                            >
-                              <img
-                                src={media.mediaUrl}
-                                alt="Media"
-                                className="w-full h-full object-cover opacity-50"
-                              />
-                              <Badge className="absolute top-2 right-2 bg-red-500">
-                                To Be Removed
-                              </Badge>
-                              <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
-                                <Button
-                                  variant="secondary"
-                                  size="sm"
-                                  onClick={() => handleUndoRemove(media.id)}
-                                >
-                                  Restore
-                                </Button>
-                              </div>
-                            </div>
-                          ))}
+                            {removeMediaIds.includes(media.id)
+                              ? "Keep"
+                              : "Remove"}
+                          </Button>
+                        </div>
                       </div>
-                    </FormItem>
-                  )}
-                </div>
+                    ))}
+                  </div>
+                </FormItem>
               )}
 
             {/* Location input */}
@@ -296,11 +284,16 @@ const PostForm = () => {
                 type="button"
                 variant="outline"
                 onClick={() => navigate(-1)}
+                disabled={isSubmitting}
               >
                 Cancel
               </Button>
-              <Button type="submit" disabled={isLoading}>
-                {isLoading ? "Processing..." : isEditMode ? "Update" : "Post"}
+              <Button type="submit" disabled={isSubmitting || isLoading}>
+                {isSubmitting
+                  ? "Processing..."
+                  : isEditMode
+                  ? "Update"
+                  : "Post"}
               </Button>
             </div>
           </form>
