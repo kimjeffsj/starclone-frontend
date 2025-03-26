@@ -25,7 +25,7 @@ const Header = () => {
       <div className="container flex items-center justify-between h-16 px-4 mx-auto md:px-6">
         {/* Logo */}
         <Link to="/" className="text-xl font-bold">
-          InstaClone
+          StarClone
         </Link>
 
         {/* Menu based on login status */}

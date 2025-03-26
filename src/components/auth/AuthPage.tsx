@@ -24,7 +24,7 @@ const AuthPage = () => {
             <CardHeader className="pb-2">
               <div className="flex justify-center items-center">
                 <Camera size={40} className="text-pink-500" />
-                <span className="ml-2 text-2xl font-bold">InstaClone</span>
+                <span className="ml-2 text-2xl font-bold">StarClone</span>
               </div>
             </CardHeader>
 

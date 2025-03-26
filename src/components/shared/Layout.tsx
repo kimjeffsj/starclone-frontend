@@ -13,7 +13,7 @@ const Layout = ({ children }: LayoutProps) => {
         {children}
       </main>
       <footer className="py-4 mt-auto text-center text-sm text-muted-foreground border-t bg-background">
-        <p>&copy; 2025 InstaClone. All rights reserved.</p>
+        <p>&copy; 2025 StarClone. All rights reserved.</p>
       </footer>
     </div>
   );
