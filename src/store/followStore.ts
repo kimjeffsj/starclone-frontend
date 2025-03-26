@@ -34,7 +34,7 @@ interface FollowState {
   clearError: () => void;
 }
 
-export const useFollowStore = create<FollowState>((set, get) => ({
+export const useFollowStore = create<FollowState>((set) => ({
   followStatus: {},
   followers: {},
   following: {},

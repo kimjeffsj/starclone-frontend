@@ -44,7 +44,7 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-export const useAuthStore = create<AuthState>((set, get) => ({
+export const useAuthStore = create<AuthState>((set) => ({
   user: null,
   token: localStorage.getItem("token"),
   isLoading: false,
