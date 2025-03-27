@@ -15,7 +15,7 @@ import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 import { toast } from "sonner";
 import { TabsContent } from "../ui/tabs";
-import { Checkbox } from "../ui/checkbox";
+// import { Checkbox } from "../ui/checkbox";
 // import { Separator } from "../ui/separator";
 // import { SocialIcon } from "react-social-icons";
 
@@ -89,7 +89,7 @@ const LoginForm = () => {
             )}
           />
 
-          <div className="flex items-center justify-between">
+          {/* <div className="flex items-center justify-between">
             <FormField
               control={form.control}
               name="rememberMe"
@@ -112,7 +112,7 @@ const LoginForm = () => {
             <Button variant="link" className="px-0 text-pink-500">
               Forgot password?
             </Button>
-          </div>
+          </div> */}
 
           <Button
             type="submit"
