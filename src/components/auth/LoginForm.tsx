@@ -16,8 +16,8 @@ import { Button } from "../ui/button";
 import { toast } from "sonner";
 import { TabsContent } from "../ui/tabs";
 import { Checkbox } from "../ui/checkbox";
-import { Separator } from "../ui/separator";
-import { SocialIcon } from "react-social-icons";
+// import { Separator } from "../ui/separator";
+// import { SocialIcon } from "react-social-icons";
 
 const LoginForm = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -48,10 +48,10 @@ const LoginForm = () => {
     }
   };
 
-  const handleSocialLogin = (provider: string) => {
-    console.log(`${provider} Login attempt`);
-    // TODO: Social login
-  };
+  // const handleSocialLogin = (provider: string) => {
+  //   console.log(`${provider} Login attempt`);
+  //   // TODO: Social login
+  // };
 
   return (
     <TabsContent value="login" className="space-y-6">
@@ -122,17 +122,17 @@ const LoginForm = () => {
             {isSubmitting ? "Signing in..." : "Login"}
           </Button>
 
-          <div className="relative">
+          {/* <div className="relative">
             <div className="absolute inset-0 flex items-center">
               <Separator />
             </div>
             <div className="relative flex justify-center">
               <span className="bg-white px-2 text-sm text-gray-500">OR</span>
             </div>
-          </div>
+          </div> */}
 
           {/* Social login button */}
-          <div className="flex justify-center space-x-4">
+          {/* <div className="flex justify-center space-x-4">
             <Button
               size="icon"
               variant="outline"
@@ -180,7 +180,7 @@ const LoginForm = () => {
                 />
               </svg>
             </Button>
-          </div>
+          </div> */}
         </form>
       </Form>
     </TabsContent>
