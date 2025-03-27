@@ -16,8 +16,8 @@ import { Button } from "../ui/button";
 import { toast } from "sonner";
 import { TabsContent } from "../ui/tabs";
 import { Checkbox } from "../ui/checkbox";
-import { Separator } from "../ui/separator";
-import { SocialIcon } from "react-social-icons";
+// import { Separator } from "../ui/separator";
+// import { SocialIcon } from "react-social-icons";
 
 const LoginForm = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -48,10 +48,10 @@ const LoginForm = () => {
     }
   };
 
-  const handleSocialLogin = (provider: string) => {
-    console.log(`${provider} Login attempt`);
-    // TODO: Social login
-  };
+  // const handleSocialLogin = (provider: string) => {
+  //   console.log(`${provider} Login attempt`);
+  //   // TODO: Social login
+  // };
 
   return (
     <TabsContent value="login" className="space-y-6">
