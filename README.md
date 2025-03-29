@@ -2,6 +2,10 @@
 
 A modern Instagram clone frontend built with React, TypeScript, and Tailwind CSS.
 
+### 🔗 [Live Demo](https://starclone.vercel.app/)
+
+See the API in action with our frontend at https://starclone.vercel.app/
+
 ## Features
 
 - 🔐 **Authentication**: User login and registration
