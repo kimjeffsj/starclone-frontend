@@ -1,64 +1,95 @@
-# Instagram Clone Coding Practice
+# StarClone (Instagram Clone Frontend)
 
-This is an Instagram clone frontend using React, TypeScript, Zustand, and shadcn/ui.
+A modern Instagram clone frontend built with React, TypeScript, and Tailwind CSS.
 
-## Installation
+## Features
 
-### 1. Install Dependencies
+- 🔐 **Authentication**: User login and registration
+- 📱 **User Interface**: Instagram-like UI with responsive design
+- 📝 **Posts**: Create, view, like, and comment on posts
+- 👥 **Profiles**: View user profiles, follow/unfollow users
+- 🖼️ **Media**: Upload and display images
+- 🌓 **UI Components**: Beautiful UI with shadcn/ui components
+
+## Tech Stack
+
+- **Framework**: React
+- **Language**: TypeScript
+- **Styling**: Tailwind CSS
+- **State Management**: Zustand
+- **Routing**: React Router
+- **Form Handling**: React Hook Form + Zod
+- **UI Components**: shadcn/ui
+- **HTTP Client**: Axios
+
+## Getting Started
+
+### Prerequisites
+
+- Node.js (v16+)
+- [StarClone Backend](https://github.com/your-username/starclone-backend) running
+
+### Installation
+
+1. Clone the frontend repository
+
+```bash
+git clonehttps://github.com/kimjeffsj/starclone-frontend.git
+cd starclone-frontend
+```
+
+2. Install dependencies
 
 ```bash
 npm install
 ```
 
-### 2. shadcn/ui Setup
+3. Set up environment variables (create a `.env` file)
 
-This project uses shadcn/ui components. Initialize the shadcn/ui setup with the following command:
-
-```bash
-npx shadcn-ui@latest init
+```
+VITE_API_URL=http://localhost:5001/api
 ```
 
-During initialization, respond as follows:
-
-- Style: `Default`
-- Base color: `Slate`
-- Global CSS: `src/index.css`
-- CSS variables: `Yes`
-- React Server Components: `No`
-- Tailwind CSS: `Yes` (already installed)
-- Import alias: `@/*`
-
-### 3. Install Required Components
-
-Install the essential shadcn components:
-
-```bash
-npx shadcn-ui@latest add button
-npx shadcn-ui@latest add form
-npx shadcn-ui@latest add input
-npx shadcn-ui@latest add textarea
-npx shadcn-ui@latest add card
-npx shadcn-ui@latest add avatar
-npx shadcn-ui@latest add dialog
-npx shadcn-ui@latest add toast
-npx shadcn-ui@latest add alert
-npx shadcn-ui@latest add carousel
-npx shadcn-ui@latest add dropdown-menu
-npx shadcn-ui@latest add tabs
-npx shadcn-ui@latest add badge
-npx shadcn-ui@latest add progress
-```
-
-### 4. Run Development Server
+4. Start the development server
 
 ```bash
 npm run dev
 ```
 
-## Setting Up Environment Variables
+The app will open in your browser at `http://localhost:3001`.
 
-Create a `.env.local` file and set the following environment variables:
+## Project Structure
 
 ```
-VITE_API_URL=http://localhost:5001/api
+src/
+  ├── components/        # React components
+  │   ├── auth/          # Authentication components
+  │   ├── post/          # Post-related components
+  │   ├── profile/       # Profile components
+  │   ├── shared/        # Shared/common components
+  │   └── ui/            # UI components (shadcn/ui)
+  ├── pages/             # Page components
+  ├── store/             # Zustand state stores
+  ├── types/             # TypeScript type definitions
+  └── utils/             # Utility functions
 ```
+
+## Main Pages
+
+- **Auth Page**: Login and registration
+- **Home Page**: Feed of posts
+- **Profile Page**: User profiles with posts and follower/following info
+- **Post Detail**: Individual post view with comments
+- **Post Form**: Create and edit posts
+
+## UI Components
+
+This project uses shadcn/ui components, which are built on top of Radix UI and styled with Tailwind CSS. To add more components:
+
+```bash
+npx shadcn@latest add [component-name]
+```
+
+## Connecting with Backend
+
+This frontend is designed to work with the [StarClone Backend](https://github.com/your-username/starclone-backend) repository. Make sure to set the `VITE_API_URL` environment variable to point to your backend API.
