@@ -12,6 +12,7 @@ export interface Post {
   updatedAt: string;
   likeCount?: number;
   isLiked?: boolean;
+  isBookmarked?: boolean;
 }
 
 export interface CreatePostData {
