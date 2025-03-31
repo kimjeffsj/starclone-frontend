@@ -32,6 +32,7 @@ interface PostsState {
     isLiked: boolean,
     likeCount?: number
   ) => void;
+  updatePostBookmarkStatus: (postId: string, isBookmarked: boolean) => void;
   clearCurrentPost: () => void;
   clearError: () => void;
 }
@@ -314,6 +315,35 @@ export const usePostsStore = create<PostsState>((set, get) => ({
           // Only update likeCount if provided, otherwise keep current
           likeCount:
             likeCount !== undefined ? likeCount : state.currentPost.likeCount,
+        };
+      }
+
+      return {
+        posts: updatedPosts,
+        currentPost: updatedCurrentPost,
+      };
+    });
+  },
+
+  // Update bookmark
+  updatePostBookmarkStatus: (postId: string, isBookmarked: boolean) => {
+    set((state) => {
+      // Update post list
+      const updatedPosts = state.posts.map((post) => {
+        if (post.id === postId) {
+          return {
+            ...post,
+            isBookmarked,
+          };
+        }
+        return post;
+      });
+
+      let updatedCurrentPost = state.currentPost;
+      if (state.currentPost && state.currentPost.id === postId) {
+        updatedCurrentPost = {
+          ...state.currentPost,
+          isBookmarked,
         };
       }
 

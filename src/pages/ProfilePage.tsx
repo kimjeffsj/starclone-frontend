@@ -26,16 +26,19 @@ import {
 } from "@/components/profile/validations/profile.schema";
 import EditProfileForm from "@/components/profile/EditProfileForm";
 import ChangeProfileImage from "@/components/profile/ChangeProfileImage";
+import BookmarkList from "@/components/post/BookmarkList";
 
 const ProfilePage = () => {
   const { username } = useParams<{ username: string }>();
+
+  const { user: currentUser } = useAuthStore();
+
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
   const [changeProfileImageOpen, setChangeProfileImageOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("posts");
-  const { user: currentUser } = useAuthStore();
 
   const isOwnProfile = currentUser?.username === username;
 
@@ -198,10 +201,13 @@ const ProfilePage = () => {
             <Grid className="h-4 w-4" />
             <span>Posts</span>
           </TabsTrigger>
-          <TabsTrigger value="saved" className="flex items-center gap-2">
-            <Bookmark className="h-4 w-4" />
-            <span>Saved</span>
-          </TabsTrigger>
+          {/* 자신의 프로필일 때만 북마크 탭 표시 */}
+          {isOwnProfile && (
+            <TabsTrigger value="saved" className="flex items-center gap-2">
+              <Bookmark className="h-4 w-4" />
+              <span>Saved</span>
+            </TabsTrigger>
+          )}
           <TabsTrigger value="tagged" className="flex items-center gap-2">
             <Grid3X3 className="h-4 w-4" />
             <span>Tagged</span>
@@ -212,17 +218,12 @@ const ProfilePage = () => {
           <PostList userId={user.id} />
         </TabsContent>
 
-        {/* Saved post */}
-        {/* TODO: Saved post implement */}
-        <TabsContent value="saved" className="mt-0">
-          <div className="flex flex-col items-center justify-center py-16 bg-card rounded-lg border">
-            <Bookmark className="h-12 w-12 text-muted-foreground mb-4" />
-            <h3 className="text-xl font-medium mb-2">No Saved Posts</h3>
-            <p className="text-muted-foreground text-center max-w-sm">
-              When you save posts, they will appear here.
-            </p>
-          </div>
-        </TabsContent>
+        {/* 북마크 탭 콘텐츠 - 자신의 프로필에서만 표시 */}
+        {isOwnProfile && (
+          <TabsContent value="saved" className="mt-0">
+            <BookmarkList />
+          </TabsContent>
+        )}
 
         {/* Tagged post */}
         {/* TODO: Tagged post implement */}

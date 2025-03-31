@@ -3,7 +3,6 @@ import { useParams, useNavigate, Link } from "react-router-dom";
 import { useAuthStore } from "@/store/authStore";
 import {
   ArrowLeft,
-  Bookmark,
   Heart,
   MessageCircle,
   MoreHorizontal,
@@ -45,41 +44,39 @@ import { useLikeStore } from "@/store/likeStore";
 import LikeUsersModal from "./LikeUsersModal";
 import CommentList from "./CommentList";
 import CommentForm from "./CommentForm";
+import { useBookmarkStore } from "@/store/bookmarkStore";
+import BookmarkButton from "./BookmarkButton";
 
 const PostDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+
   const { user } = useAuthStore();
   const { checkLikeStatus } = useLikeStore();
-  const [showLikesModal, setShowLikesModal] = useState(false);
-  const [isBookmarked, setIsBookmarked] = useState(false);
+  const { checkBookmarkStatus } = useBookmarkStore();
 
-  const {
-    currentPost,
-    fetchPostById,
-    deletePost,
-    likePost,
-    unlikePost,
-    isLoading,
-    error,
-  } = usePostsStore();
+  const [showLikesModal, setShowLikesModal] = useState(false);
+
+  const { currentPost, deletePost, likePost, unlikePost, isLoading, error } =
+    usePostsStore();
 
   useEffect(() => {
     const checkPostLikeStatus = async () => {
-      if (currentPost && currentPost.isLiked === undefined && id) {
-        await checkLikeStatus(id);
+      if (currentPost) {
+        // Check like status
+        if (currentPost.isLiked === undefined && id) {
+          await checkLikeStatus(id);
+        }
+
+        // Check bookmark status
+        if (currentPost.isBookmarked === undefined && id) {
+          await checkBookmarkStatus(id);
+        }
       }
     };
 
     checkPostLikeStatus();
-  }, [currentPost, id, checkLikeStatus]);
-
-  useEffect(() => {
-    if (id) {
-      console.log("PostDetail mounted with ID:", id);
-      fetchPostById(id);
-    }
-  }, [id, fetchPostById]);
+  }, [currentPost, id, checkLikeStatus, checkBookmarkStatus]);
 
   const handleDelete = async () => {
     if (!currentPost) return;
@@ -115,14 +112,6 @@ const PostDetail = () => {
         description: "Failed to update like status",
       });
     }
-  };
-
-  const handleBookmarkToggle = () => {
-    setIsBookmarked(!isBookmarked);
-    // TODO: Bookmark Api
-    toast.success(
-      isBookmarked ? "Post removed from bookmarks" : "Post saved to bookmarks"
-    );
   };
 
   if (isLoading) {
@@ -263,16 +252,11 @@ const PostDetail = () => {
               <MessageCircle className="h-6 w-6" />
             </Button>
           </div>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={handleBookmarkToggle}
-            className={isBookmarked ? "text-yellow-500" : ""}
-          >
-            <Bookmark
-              className={`h-6 w-6 ${isBookmarked ? "fill-current" : ""}`}
-            />
-          </Button>
+
+          <BookmarkButton
+            postId={currentPost.id}
+            initialBookmarked={currentPost.isBookmarked}
+          />
         </div>
 
         {currentPost.likeCount !== undefined && currentPost.likeCount > 0 && (

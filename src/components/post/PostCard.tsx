@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuthStore } from "@/store/authStore";
 import {
-  Bookmark,
   Heart,
   MessageCircle,
   MoreHorizontal,
@@ -37,44 +36,57 @@ import { useLikeStore } from "@/store/likeStore";
 import LikeUsersModal from "./LikeUsersModal";
 import CommentForm from "./CommentForm";
 import CommentList from "./CommentList";
+import BookmarkButton from "./BookmarkButton";
+import { useBookmarkStore } from "@/store/bookmarkStore";
+import { Post } from "@/types/post.types";
 
 interface PostCardProps {
-  postId: string;
+  postId?: string; // ID로 포스트를 찾는 경우 (기존 방식)
+  post?: Post; // 직접 포스트 객체를 전달하는 경우 (새로운 방식)
 }
 
-const PostCard = ({ postId }: PostCardProps) => {
+const PostCard = ({ postId, post: initialPost }: PostCardProps) => {
   const { posts, deletePost, likePost, unlikePost } = usePostsStore();
   const { checkLikeStatus } = useLikeStore();
+  const { checkBookmarkStatus } = useBookmarkStore();
   const { user } = useAuthStore();
   const [isDeleting, setIsDeleting] = useState(false);
   const [showDeleteAlert, setShowDeleteAlert] = useState(false);
   const [showLikesModal, setShowLikesModal] = useState(false);
-  const [isBookmarked, setIsBookmarked] = useState(false);
 
-  const post = posts.find((p) => p.id === postId);
+  const currentPost =
+    initialPost || (postId ? posts.find((p) => p.id === postId) : undefined);
 
   useEffect(() => {
-    const checkPostLikeStatus = async () => {
+    const checkPostStatuses = async () => {
       try {
-        if (post && post.isLiked === undefined) {
-          await checkLikeStatus(postId);
+        if (currentPost) {
+          const id = currentPost.id;
+
+          if (currentPost.isLiked === undefined) {
+            await checkLikeStatus(id);
+          }
+
+          if (currentPost.isBookmarked === undefined) {
+            await checkBookmarkStatus(id);
+          }
         }
       } catch (error) {
-        console.error("Failed to check like status", error);
+        console.error("Failed to check post statuses", error);
       }
     };
 
-    checkPostLikeStatus();
-  }, [post, postId, checkLikeStatus]);
+    checkPostStatuses();
+  }, [currentPost, checkLikeStatus, checkBookmarkStatus]);
 
-  if (!post) return null;
+  if (!currentPost) return null;
 
-  const isAuthor = user?.id === post.user.id;
+  const isAuthor = user?.id === currentPost.user.id;
 
   const handleDelete = async () => {
     setIsDeleting(true);
     try {
-      await deletePost(post.id);
+      await deletePost(currentPost.id);
       toast.success("Post deleted", {
         description: "The post has been successfully deleted.",
       });
@@ -89,14 +101,12 @@ const PostCard = ({ postId }: PostCardProps) => {
   };
 
   const handleLikeToggle = async () => {
-    if (!post) return;
-
     try {
-      if (post.isLiked) {
-        await unlikePost(post.id);
+      if (currentPost.isLiked) {
+        await unlikePost(currentPost.id);
         toast.success("Post unliked");
       } else {
-        await likePost(post.id);
+        await likePost(currentPost.id);
         toast.success("Post liked");
       }
     } catch (error) {
@@ -106,34 +116,28 @@ const PostCard = ({ postId }: PostCardProps) => {
     }
   };
 
-  const handleBookmarkToggle = () => {
-    setIsBookmarked(!isBookmarked);
-    // TODO: Bookmark Api
-    toast.success(
-      isBookmarked ? "Post removed from bookmarks" : "Post saved to bookmarks"
-    );
-  };
-
   return (
     <Card className="mb-6 overflow-hidden">
       <CardHeader className="p-4 flex flex-row items-center space-y-0">
         <Link
-          to={`/profile/${post.user.username}`}
+          to={`/profile/${currentPost.user.username}`}
           className="flex items-center flex-1"
         >
           <Avatar className="h-10 w-10 mr-3">
             <AvatarImage
-              src={post.user.profileImageUrl}
-              alt={post.user.username}
+              src={currentPost.user.profileImageUrl}
+              alt={currentPost.user.username}
             />
             <AvatarFallback>
-              {post.user.username.charAt(0).toUpperCase()}
+              {currentPost.user.username.charAt(0).toUpperCase()}
             </AvatarFallback>
           </Avatar>
           <div>
-            <p className="font-medium text-sm">{post.user.username}</p>
-            {post.location && (
-              <p className="text-xs text-muted-foreground">{post.location}</p>
+            <p className="font-medium text-sm">{currentPost.user.username}</p>
+            {currentPost.location && (
+              <p className="text-xs text-muted-foreground">
+                {currentPost.location}
+              </p>
             )}
           </div>
         </Link>
@@ -149,7 +153,7 @@ const PostCard = ({ postId }: PostCardProps) => {
             <DropdownMenuContent align="end">
               <DropdownMenuItem asChild>
                 <Link
-                  to={`/post/edit/${post.id}`}
+                  to={`/post/edit/${currentPost.id}`}
                   className="cursor-pointer flex items-center"
                 >
                   <Pencil className="mr-2 h-4 w-4" />
@@ -168,10 +172,10 @@ const PostCard = ({ postId }: PostCardProps) => {
         )}
       </CardHeader>
 
-      {post.media && post.media.length > 0 && (
+      {currentPost.media && currentPost.media.length > 0 && (
         <div className="w-full">
           <ImageCarousel
-            images={post.media.filter(
+            images={currentPost.media.filter(
               (media) =>
                 media &&
                 typeof media === "object" &&
@@ -189,29 +193,25 @@ const PostCard = ({ postId }: PostCardProps) => {
               variant="ghost"
               size="icon"
               onClick={handleLikeToggle}
-              className={post.isLiked ? "text-pink-500" : ""}
+              className={currentPost.isLiked ? "text-pink-500" : ""}
             >
               <Heart
-                className={`h-6 w-6 ${post.isLiked ? "fill-current" : ""}`}
+                className={`h-6 w-6 ${
+                  currentPost.isLiked ? "fill-current" : ""
+                }`}
               />
             </Button>
             <Button variant="ghost" size="icon">
               <MessageCircle className="h-6 w-6" />
             </Button>
           </div>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={handleBookmarkToggle}
-            className={isBookmarked ? "text-yellow-500" : ""}
-          >
-            <Bookmark
-              className={`h-6 w-6 ${isBookmarked ? "fill-current" : ""}`}
-            />
-          </Button>
+          <BookmarkButton
+            postId={currentPost.id}
+            initialBookmarked={currentPost.isBookmarked}
+          />
         </div>
 
-        {post.likeCount !== undefined && post.likeCount > 0 && (
+        {currentPost.likeCount !== undefined && currentPost.likeCount > 0 && (
           <div className="mb-4">
             <Button
               variant="link"
@@ -219,7 +219,8 @@ const PostCard = ({ postId }: PostCardProps) => {
               onClick={() => setShowLikesModal(true)}
             >
               <span>
-                {post.likeCount} {post.likeCount === 1 ? "like" : "likes"}
+                {currentPost.likeCount}{" "}
+                {currentPost.likeCount === 1 ? "like" : "likes"}
               </span>
             </Button>
           </div>
@@ -227,27 +228,27 @@ const PostCard = ({ postId }: PostCardProps) => {
 
         <div className="flex items-start mb-3">
           <Link
-            to={`/profile/${post.user.username}`}
+            to={`/profile/${currentPost.user.username}`}
             className="font-semibold text-sm mr-2"
           >
-            {post.user.username}
+            {currentPost.user.username}
           </Link>
-          {post.caption && (
-            <p className="text-sm whitespace-pre-line">{post.caption}</p>
+          {currentPost.caption && (
+            <p className="text-sm whitespace-pre-line">{currentPost.caption}</p>
           )}
         </div>
 
         <p className="text-xs text-muted-foreground mt-2">
-          {formatDate(post.createdAt)}
+          {formatDate(currentPost.createdAt)}
         </p>
 
         <div className="mt-4 border-t pt-4">
           <h3 className="text-xs font-semibold mb-4">Comments</h3>
 
-          <CommentList postId={post.id} maxDisplay={2} />
+          <CommentList postId={currentPost.id} maxDisplay={2} />
 
           <div className="mt-4">
-            <CommentForm postId={post.id} />
+            <CommentForm postId={currentPost.id} />
           </div>
         </div>
       </CardContent>
@@ -279,7 +280,7 @@ const PostCard = ({ postId }: PostCardProps) => {
 
       {/* Likes Modal */}
       <LikeUsersModal
-        postId={postId}
+        postId={currentPost.id}
         open={showLikesModal}
         onOpenChange={setShowLikesModal}
       />
