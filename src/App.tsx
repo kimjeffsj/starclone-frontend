@@ -13,6 +13,8 @@ import PostForm from "./components/post/PostForm";
 import PostDetail from "./components/post/PostDetail";
 import ProfilePage from "./pages/ProfilePage";
 
+import { Analytics } from "@vercel/analytics/react";
+
 function App() {
   const { checkAuth } = useAuthStore();
 
@@ -94,6 +96,7 @@ function App() {
           }
         />
       </Routes>
+      <Analytics />
     </Router>
   );
 }
