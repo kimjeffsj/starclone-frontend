@@ -31,7 +31,7 @@ See the API in action with our frontend at https://starclone.vercel.app/
 ### Prerequisites
 
 - Node.js (v16+)
-- [StarClone Backend](https://github.com/your-username/starclone-backend) running
+- [StarClone Backend](https://github.com/kimjeffsj/starclone-backend) running
 
 ### Installation
 
@@ -96,4 +96,4 @@ npx shadcn@latest add [component-name]
 
 ## Connecting with Backend
 
-This frontend is designed to work with the [StarClone Backend](https://github.com/your-username/starclone-backend) repository. Make sure to set the `VITE_API_URL` environment variable to point to your backend API.
+This frontend is designed to work with the [StarClone Backend](https://github.com/kimjeffsj/starclone-backend) repository. Make sure to set the `VITE_API_URL` environment variable to point to your backend API.
